@@ -19,6 +19,7 @@ class Mentor(models.Model):
 
 class Project(models.Model):
     name = models.CharField(max_length=100)
+    mentors = models.ManyToManyField(Mentor, through='Mentorship')
 
     def __str__(self):
         return self.name
