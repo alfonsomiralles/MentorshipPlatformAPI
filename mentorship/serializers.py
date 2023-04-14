@@ -11,12 +11,12 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'name', 'mentors')
+        fields = '__all__'
 
     def get_mentors(self, obj):
-        mentorships = Mentorship.objects.filter(project=obj)
-        mentors = [mentorship.mentor for mentorship in mentorships]
-        return MentorSerializer(mentors, many=True).data    
+        active_mentorships = Mentorship.objects.filter(project=obj, status='active')
+        active_mentors = [mentorship.mentor for mentorship in active_mentorships]
+        return MentorSerializer(active_mentors, many=True, read_only=True, context=self.context).data    
 
 class MentorshipSerializer(serializers.ModelSerializer):
     class Meta:
