@@ -7,7 +7,7 @@ class MentorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
-    mentors = serializers.SerializerMethodField()
+    mentors = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Mentor.objects.all())
 
     class Meta:
         model = Project
@@ -16,7 +16,13 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_mentors(self, obj):
         active_mentorships = Mentorship.objects.filter(project=obj, status='active')
         active_mentors = [mentorship.mentor for mentorship in active_mentorships]
-        return MentorSerializer(active_mentors, many=True, read_only=True, context=self.context).data    
+        return [{'id': mentor.id, **MentorSerializer(mentor, context=self.context).data} for mentor in active_mentors]
+
+    def get_mentor_names(self, obj):
+        mentors = self.get_mentors(obj)
+        return [mentor['name'] for mentor in mentors]
+
+    mentor_names = serializers.SerializerMethodField(source='get_mentors')    
 
 class MentorshipSerializer(serializers.ModelSerializer):
     class Meta:
